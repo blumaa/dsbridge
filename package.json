@@ -3,10 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "description": "Answers one question about any app: is the design system it installed actually being used, and how.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blumaa/dsbridge.git"
+  },
+  "homepage": "https://github.com/blumaa/dsbridge#readme",
   "license": "MIT",
   "type": "module",
-  "bin": { "dsbridge-mcp": "./dist/server.js" },
+  "bin": {
+    "dsbridge-mcp": "./dist/server.js"
+  },
   "scripts": {
+    "prepare": "tsc",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -21,5 +29,10 @@
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist"
+  ]
 }
