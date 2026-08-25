@@ -16,27 +16,31 @@ contrast: 119 pairs measured, 3 failing, 7 exempt (inactive controls), 17 not me
 
 ## Install
 
-Node 20 or newer.
+Node 20 or newer. One command, nothing to clone:
+
+```sh
+claude mcp add --scope user dsbridge -- npx -y github:blumaa/dsbridge
+```
+
+`--scope user` writes `~/.claude.json`, so the server is available in every
+repository without being installed in any of them. No hooks, nothing that runs
+on its own, nothing added to the consuming app. Restart the session and
+`claude mcp list` should show it connected.
+
+The first run clones this repository and compiles it — the `prepare` script
+builds on install, which is why `dist/` is not committed. Later runs come from
+the npx cache. To pick up a new version, clear it: `npx clear-npx-cache`.
+
+Any MCP client works. The server speaks stdio and the command is
+`npx -y github:blumaa/dsbridge`.
+
+To work on it instead of just using it:
 
 ```sh
 git clone git@github.com:blumaa/dsbridge.git
-cd dsbridge
-pnpm install
-pnpm build
+cd dsbridge && pnpm install
+claude mcp add --scope user dsbridge -- node "$PWD/dist/server.js"
 ```
-
-Register it once, at user scope, so it is available in every repo without being
-installed in any of them:
-
-```sh
-claude mcp add --scope user dsbridge node /absolute/path/to/dsbridge/dist/server.js
-```
-
-That writes `~/.claude.json`. No hooks, nothing that runs on its own, nothing
-added to the consuming app.
-
-Any MCP client works. The server speaks stdio; the command is
-`node dist/server.js`.
 
 ## Use
 
