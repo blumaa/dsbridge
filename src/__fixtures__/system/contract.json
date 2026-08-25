@@ -1,0 +1,6 @@
+{
+  "contrast": [
+    { "fg": "--mds-text-primary", "bg": ["--mds-surface-page", "--mds-surface-card"], "ratio": 4.5 },
+    { "fg": "--mds-control-border", "bg": ["--mds-surface-page"], "ratio": 3 }
+  ]
+}

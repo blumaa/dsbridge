@@ -1,0 +1,14 @@
+.thing {
+  gap: var(--acme-space-2);
+  color: var(--acme-color-text);
+  padding: 12px;
+  margin: 8px;
+  border-radius: 3px;
+  background: var(--acme-color-missing);
+}
+
+.thing__note {
+  color: #0088ff;
+  border: 0;
+  width: 100%;
+}

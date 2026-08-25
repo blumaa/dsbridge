@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "clusters": [
+    {
+      "default": "Stack",
+      "use": "vertical flow, with the gap owned by the parent",
+      "instead": [{ "when": "the children sit in a row", "prefer": "Inline" }]
+    },
+    {
+      "default": "Button",
+      "use": "something happens when it is pressed",
+      "instead": [{ "when": "it goes somewhere", "prefer": "Link" }]
+    }
+  ],
+  "deprecated": [{ "component": "Button", "prop": "kind", "use": "variant", "why": "two names for one prop" }]
+}

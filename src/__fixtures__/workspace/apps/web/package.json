@@ -1,0 +1,6 @@
+{
+  "name": "@a-workspace/web",
+  "dependencies": {
+    "@acme/ds": "1.0.0"
+  }
+}

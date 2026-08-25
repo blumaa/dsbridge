@@ -1,0 +1,6 @@
+{
+  "name": "@a-workspace/ui",
+  "dependencies": {
+    "@acme/ds": "1.0.0"
+  }
+}

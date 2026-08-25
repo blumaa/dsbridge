@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "roles": {
+    "gap": { "properties": ["gap", "row-gap", "column-gap"], "tokens": ["--mds-gap*"] },
+    "control-height": { "properties": ["height", "min-height"], "tokens": ["--mds-control-h-*", "--mds-tap-min"] },
+    "rung": { "properties": [], "tokens": ["--mds-space-*"] }
+  }
+}

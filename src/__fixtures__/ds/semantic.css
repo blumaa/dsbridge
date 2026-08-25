@@ -1,0 +1,9 @@
+:root {
+  --mds-text-primary: var(--mds-gray-900);
+  --mds-surface-page: var(--mds-gray-050);
+  --mds-gap: var(--mds-space-2);
+}
+[data-theme="dark"] {
+  --mds-text-primary: var(--mds-gray-050);
+  --mds-surface-page: var(--mds-gray-900);
+}

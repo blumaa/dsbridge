@@ -1,0 +1,6 @@
+:root {
+  --mds-space-1: 4px;
+  --mds-space-2: 8px;
+  --mds-space-3: 12px;
+  --mds-pad-control-md: var(--mds-space-3);
+}

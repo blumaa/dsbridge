@@ -1,0 +1,6 @@
+:root {
+  --mds-text-primary: #999999;
+}
+[data-theme="dark"] {
+  --mds-text-primary: #555555;
+}

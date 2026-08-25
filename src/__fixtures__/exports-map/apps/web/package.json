@@ -1,0 +1,4 @@
+{
+  "name": "web",
+  "dependencies": { "@strict/tokens": "1.0.0", "@strict/react": "1.0.0" }
+}

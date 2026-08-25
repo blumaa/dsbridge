@@ -1,0 +1,1 @@
+{ "name": "a-consuming-app", "dependencies": { "@acme/ds": "1.0.0", "@acme/react": "1.0.0" } }

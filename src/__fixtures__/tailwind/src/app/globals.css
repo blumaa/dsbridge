@@ -1,0 +1,9 @@
+/* A Tailwind v4 app's one stylesheet: a package by name, then the app's scale.
+   No component ever gets a stylesheet of its own — the styling is in the class
+   attributes. */
+@import "tailwindcss";
+
+:root {
+  --background: #fafaf8;
+  --foreground: #171717;
+}

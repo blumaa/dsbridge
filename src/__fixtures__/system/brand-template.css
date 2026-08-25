@@ -1,0 +1,15 @@
+:root {
+  --mds-text-primary: #101010;
+  --mds-surface-page: #fffdf8;
+  --mds-surface-card: #ffffff;
+  --mds-text-inverse: #f8f8f8;
+  --mds-control-border: #5e5e5e;
+  --mds-gap: var(--mds-space-2);
+  --mds-type-body: var(--mds-weight-semibold) var(--mds-text-base)/1.5 var(--mds-font-body);
+}
+[data-theme="dark"] {
+  --mds-text-primary: #f5f5f5;
+  --mds-surface-page: #101010;
+  --mds-surface-card: #1a1a1a;
+  --mds-control-border: #a0a0a0;
+}

@@ -1,0 +1,7 @@
+:root {
+  --mds-text-primary: #101010;
+  --mds-surface-page: #fffdf8;
+}
+[data-theme="dark"] {
+  --mds-surface-page: #101010;
+}

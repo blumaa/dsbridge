@@ -1,0 +1,6 @@
+/* The two failures the surface exists to catch: a rung role given a length of
+   its own, and a floor re-pointed. */
+:root {
+  --mds-pad-control-md: 10px;
+  --mds-tap-min: 40px;
+}

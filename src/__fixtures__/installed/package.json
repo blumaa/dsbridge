@@ -1,0 +1,11 @@
+{
+  "name": "an-app",
+  "dependencies": {
+    "@acme/ds": "1.0.0",
+    "@acme/react": "1.0.0",
+    "react": "19.0.0"
+  },
+  "devDependencies": {
+    "vitest": "4.0.0"
+  }
+}

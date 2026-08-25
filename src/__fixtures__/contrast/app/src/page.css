@@ -1,0 +1,79 @@
+.note {
+  color: #999999;
+}
+
+.heading {
+  color: #767676;
+  background: #ffffff;
+  font-size: 28px;
+}
+
+.hero {
+  color: #ffffff;
+  background: linear-gradient(180deg, #000000, #ffffff);
+}
+
+.caption {
+  position: absolute;
+  color: var(--acme-text-on-media);
+}
+
+.caption--scrimmed {
+  position: absolute;
+  color: var(--acme-text-on-media);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.inherits {
+  color: inherit;
+  background-color: var(--acme-color-surface);
+}
+
+:root {
+  --own-ink: #595959;
+}
+
+[data-theme="dark"] {
+  --own-ink: #cfcfcf;
+}
+
+.own {
+  color: var(--own-ink);
+  background: var(--acme-color-surface);
+}
+
+.panel {
+  background: var(--acme-color-accent);
+}
+
+.panel .label {
+  color: var(--acme-color-on-accent);
+}
+
+.ghost {
+  color: var(--acme-color-page);
+}
+
+:root {
+  --own-wisp: #e8e8e8;
+}
+
+[data-theme="dark"] {
+  --own-wisp: #131313;
+}
+
+.wisp {
+  color: var(--own-wisp);
+}
+
+:root {
+  --own-glint: #ebebeb;
+}
+
+[data-theme="dark"] {
+  --own-glint: #f5f5f5;
+}
+
+.glint {
+  color: var(--own-glint);
+}

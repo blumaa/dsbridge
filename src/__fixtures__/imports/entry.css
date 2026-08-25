@@ -1,0 +1,9 @@
+/* An app entry the way a Tailwind v4 app writes one: the first import names a
+   package rather than a path, and nothing on disk answers to it. */
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter");
+@import "./read.css";
+
+:root {
+  --app-entry: 4px;
+}

@@ -1,0 +1,7 @@
+/* A brand moving shape and size the way the surface says it may: the role that
+   names a rung is re-pointed at another rung, the one that is a size of its own
+   is written as a length. */
+:root {
+  --mds-pad-control-md: var(--mds-space-2);
+  --mds-control-h-md: 40px;
+}

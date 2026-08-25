@@ -1,0 +1,10 @@
+:root {
+  --mds-control-h-md: 38px;
+  --mds-bp-md: 600px;
+  --mds-bp-lg: 1024px;
+  --mds-vvh: 100dvh;
+  --mds-tap-min: 44px;
+  --mds-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --mds-z-sticky: 100;
+  --mds-z-modal: 400;
+}

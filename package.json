@@ -1,0 +1,25 @@
+{
+  "name": "dsbridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Answers one question about any app: is the design system it installed actually being used, and how.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "dsbridge-mcp": "./dist/server.js" },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "verify": "pnpm build && pnpm typecheck && pnpm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": { "node": ">=20" }
+}
