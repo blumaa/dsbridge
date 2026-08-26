@@ -11,32 +11,20 @@ import { discover } from "./discover.js";
 import { measure, type Usage } from "./usage.js";
 import { measureContrast, type Contrast } from "./contrast.js";
 import { page } from "./report.js";
+import { report } from "./console.js";
 
 export type Reading = {
   usage: Usage;
   contrast: Contrast;
   /** Where the page was written. Outside the app, always. */
   path: string;
-  /** The same numbers as the page, in the few lines a chat can hold. */
-  headline: string;
+  /** The same numbers as the page, laid out for the terminal it is printed in. */
+  report: string;
 };
 
 /** A file name that is the app's, and stays the app's across readings. */
 const fileFor = (root: string): string =>
   `${basename(root).replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "app"}.html`;
-
-function headlineFor(usage: Usage, contrast: Contrast): string {
-  const { components, tokens, drift, system } = usage;
-  const files = new Set(drift.map((d) => d.file)).size;
-  const duplicates = tokens.invented.filter((t) => t.duplicates !== undefined).length;
-  return [
-    `${system.tokens.id}${system.components ? ` · ${system.components.id}` : ""} — ${usage.coverage}% of written values came through the system`,
-    `components: ${components.used.length} of ${components.exported.length} rendered, ${components.unused.length} never`,
-    `tokens: ${tokens.spent.length} of ${tokens.total} read, ${tokens.repointed.length} re-pointed, ${tokens.invented.length} invented (${duplicates} duplicating a system value)${tokens.missing.length ? `, ${tokens.missing.length} read but never declared` : ""}`,
-    `drift: ${drift.length} literal values in ${files} files`,
-    `contrast: ${contrast.measured} pairs measured, ${contrast.failing.length} failing, ${contrast.exempt.length} exempt (inactive controls), ${contrast.unmeasured.length} not measurable, ${contrast.overMedia.length} over media`,
-  ].join("\n");
-}
 
 /**
  * Read an app and leave a page behind.
@@ -51,5 +39,5 @@ export function run(root: string, at: string, into: string): Reading {
   mkdirSync(into, { recursive: true });
   const path = join(into, fileFor(app));
   writeFileSync(path, page(usage, contrast, at));
-  return { usage, contrast, path, headline: headlineFor(usage, contrast) };
+  return { usage, contrast, path, report: report(usage, contrast, at, path) };
 }

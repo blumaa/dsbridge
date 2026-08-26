@@ -26,11 +26,12 @@ describe("one reading of one app", () => {
     expect(readdirSync(into)).toHaveLength(1);
   });
 
-  it("hands back the numbers in a line a person can read", () => {
-    expect(reading.headline).toContain("@acme/ds");
-    expect(reading.headline).toContain("38%");
-    expect(reading.headline).toMatch(/2 of 6 rendered/);
-    expect(reading.headline).toMatch(/5 literal values/);
+  it("hands back the report laid out for the terminal it is printed in", () => {
+    expect(reading.report).toContain("@acme/ds");
+    expect(reading.report).toContain("38%");
+    expect(reading.report).toMatch(/components\s+6\s+2 rendered, 4 never/);
+    expect(reading.report).toMatch(/drift\s+5\s/);
+    expect(reading.report).toContain(`page: file://${reading.path}`);
   });
 
   it("hands back the measurements too, for whoever wants to ask more", () => {
