@@ -126,7 +126,7 @@ Two tools. Both take an optional `path` and default to the working directory.
 | Tool | Returns |
 | --- | --- |
 | `design_system_usage` | The report above: a table per question, ten rows in each list |
-| `design_system_drift` | The same report with every row rather than the first ten |
+| `design_system_drift` | The same report with a hundred rows in each list rather than ten, and up to five hundred on request |
 
 Ask for either in words. *"Where is this app drifting from the design system?"*
 reaches the second one.

@@ -49,7 +49,8 @@ server.registerTool(
   {
     title: "Design system drift",
     description:
-      "The same reading as design_system_usage with every list in full rather than its first ten rows: " +
+      "The same reading as design_system_usage with a hundred rows in each list rather than ten, and up to " +
+      "five hundred on request: " +
       "every literal value a token already holds, every component the app built itself, every token it " +
       "declared, every token read that nothing declares, and every colour pair failing WCAG under this " +
       "app's brand. " +
