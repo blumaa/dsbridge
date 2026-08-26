@@ -9,7 +9,7 @@ const named = (name: string) => usage.components.used.find((c) => c.name === nam
 
 describe("the components the app renders", () => {
   it("counts every place a system component is rendered", () => {
-    expect(named("Button")?.count).toBe(2);
+    expect(named("Button")?.count).toBe(3);
     expect(named("Card")?.count).toBe(1);
   });
 
@@ -26,6 +26,35 @@ describe("the components the app renders", () => {
 
   it("names what the app installed and never rendered", () => {
     expect(usage.components.unused).toEqual(["Chip", "Sheet", "Stack", "Text"]);
+  });
+
+  /* The question is not how many components are rendered, it is how many of
+     them the design system is answering for. */
+  it("counts the app's own components apart from the system's", () => {
+    expect(usage.components.own.map((c) => c.name)).toEqual(["Badge", "Chip", "Feed"]);
+    expect(usage.components.used.map((c) => c.name)).toEqual(["Button", "Card"]);
+    expect(usage.components.external).toEqual([]);
+  });
+
+  it("counts a DOM element as nobody's component", () => {
+    const names = [...usage.components.own, ...usage.components.external].map((c) => c.name);
+    expect(names).not.toContain("div");
+  });
+
+  /* A file that imports the system and declares a Button is wrapping one. A
+     file that declares a Button and imports nothing built a second one, and
+     that is a file that could be an import. */
+  it("names an app component the system already exports by that name", () => {
+    expect(usage.components.rebuilt.map((c) => c.name)).toEqual(["Chip"]);
+    expect(usage.components.rebuilt[0]!.file.endsWith("Chip.tsx")).toBe(true);
+  });
+
+  /* A component whose file reaches for nothing but the system could be the
+     system's. One that reaches for an app module is this app's, however often
+     it is rendered, and one the system already ships is an import rather than
+     a move. */
+  it("names the app's own components that could move into the system", () => {
+    expect(usage.components.promotable).toEqual(["Badge"]);
   });
 });
 
@@ -45,6 +74,19 @@ describe("the tokens the app spends and declares", () => {
   it("reports a var() the system has no token for", () => {
     expect(usage.tokens.missing.map((m) => m.name)).toEqual(["--acme-color-missing"]);
     expect(usage.tokens.missing[0]?.file.endsWith("thing.module.css")).toBe(true);
+  });
+
+  /* The system declares slots on its own components, never at the root. A
+     token read from one is declared — somewhere the root cannot see. */
+  it("does not call a token the system declares on a component undeclared", () => {
+    expect(usage.tokens.missing.map((m) => m.name)).not.toContain("--acme-icon-slot");
+  });
+
+  /* A token nothing reads is not a token, it is a line in a file. */
+  it("counts how often the app reads a token of its own", () => {
+    const own = new Map(usage.tokens.invented.map((t) => [t.name, t.used]));
+    expect(own.get("--app-panel-bg")).toBe(1);
+    expect(own.get("--app-shadow")).toBe(0);
   });
 
   /* A token of the app's own is not wrong. A token of the app's own holding a
@@ -100,9 +142,31 @@ describe("the values written past the system", () => {
   });
 });
 
-describe("the headline", () => {
-  /* Three values come through the system and five are written past it. */
+describe("where every value the app writes came from", () => {
+  /* The whole report in three numbers: four values read a system token, one
+     reads a token of the app's own, five went through no token at all. */
+  it("counts the system, the app's own tokens and the literals apart", () => {
+    expect(usage.written).toEqual({ system: 4, own: 1, literal: 5 });
+  });
+
   it("is the share of written values that came from the system", () => {
-    expect(usage.coverage).toBe(38);
+    expect(usage.coverage).toBe(40);
+  });
+
+  /* A token of the app's own is not the design system, however tidy it is. */
+  it("does not count a token of the app's own as coming through the system", () => {
+    expect(usage.tokens.spent).not.toContain("--app-panel-bg");
+  });
+
+  /* Nine spacings written by hand is one gap in the spacing scale, not nine
+     unrelated mistakes. */
+  it("says what kind of value went through no token", () => {
+    expect(usage.drift.map((d) => d.kind)).toEqual([
+      "spacing",
+      "spacing",
+      "spacing",
+      "radius",
+      "colour",
+    ]);
   });
 });

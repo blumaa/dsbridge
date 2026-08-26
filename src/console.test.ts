@@ -23,15 +23,85 @@ describe("the report as it is read in a terminal", () => {
   it("says which app it read, against which system, on which day", () => {
     expect(text).toContain("app · 2026-08-25");
     expect(text).toContain("@acme/ds");
-    expect(text).toContain("38% of written values came through the system");
+    expect(text).toContain("40% of written values came through the system");
   });
 
-  it("counts the four areas in one table", () => {
-    const summary = section(text, "area")!;
-    expect(summary).toMatch(/components\s+6\s+2 rendered, 4 never/);
-    expect(summary).toMatch(/tokens\s+\d+\s+\d+ read/);
-    expect(summary).toMatch(/drift\s+5\s/);
-    expect(summary).toMatch(/contrast\s+\d+\s/);
+  /* The contract in three numbers: the system named this value, the app named
+     it, or nobody did. */
+  it("splits every value the app wrote by who named it", () => {
+    const values = section(text, "values written")!;
+    expect(values).toMatch(/through a design system token\s+4\s+40%/);
+    expect(values).toMatch(/through a token the app named itself\s+1\s+10%/);
+    expect(values).toMatch(/through no token at all\s+5\s+50%/);
+  });
+
+  /* A missing scale is the actionable half: five literals is a number, three
+     spacings with no token is a job. */
+  it("says what kind of value went through no token, and what a token holds", () => {
+    const kinds = section(text, "Values with no token behind them (5)")!;
+    expect(kinds).toMatch(/spacing\s+3\s+3/);
+    expect(kinds).toMatch(/radius\s+1\s+—/);
+    expect(kinds).toMatch(/colour\s+1\s+—/);
+  });
+
+  it("names the literal values a token already holds, with the token", () => {
+    const drift = section(text, "Literal values a token already holds")!;
+    expect(drift).toContain("src/");
+    expect(drift).toMatch(/--acme-/);
+  });
+
+  it("splits every component the app rendered by whose it is", () => {
+    const parts = section(text, "components rendered")!;
+    expect(parts).toMatch(/from the design system\s+2\s+4/);
+    expect(parts).toMatch(/the app's own\s+3\s+3/);
+    expect(parts).toMatch(/from another package\s+0\s+0/);
+    expect(parts).toMatch(/never rendered\s+4/);
+  });
+
+  /* The two things that can be done with an app's own component: import the one
+     that already exists, or move this one up. */
+  it("says of each of the app's own components what could become of it", () => {
+    const own = section(text, "The app's own components (3)")!;
+    expect(own).toMatch(/Chip\s+1\s+1\s+the system already ships one by this name/);
+    expect(own).toMatch(/Badge\s+1\s+1\s+could move into the system/);
+    expect(own).toMatch(/Feed\s+1\s+1\s*$/m);
+    const summary = section(text, "components rendered")!;
+    expect(summary).toMatch(/of those, could move into the system\s+1/);
+    expect(summary).toMatch(/of those, a name the system already ships\s+1/);
+  });
+
+  it("lists the components the app never rendered", () => {
+    expect(section(text, "Never rendered")).toContain("Chip, Sheet, Stack, Text");
+  });
+
+  it("counts what the system offers against what the app takes", () => {
+    const counts = section(text, "tokens")!;
+    expect(counts).toMatch(/declared by the design system\s+7/);
+    expect(counts).toMatch(/read by the app\s+3/);
+    expect(counts).toMatch(/declared by the app itself\s+3/);
+    expect(counts).toMatch(/of those, read anywhere\s+1/);
+  });
+
+  it("names the tokens the app declared itself, with what reads them", () => {
+    const invented = section(text, "Tokens the app named itself (3)")!;
+    expect(invented).toMatch(/--app-gap\s+8px\s+0\s+--acme-space-2/);
+    expect(invented).toContain("--app-panel-bg");
+  });
+
+  it("names a token the app reads that nothing declares", () => {
+    const missing = section(text, "Read by the app and declared by nobody")!;
+    expect(missing).toContain("--acme-color-missing");
+  });
+
+  /* Whose stylesheet failed decides whose job the fix is: the system's colours
+     under this brand, or the app painting text itself. */
+  it("counts every contrast pair by outcome and by whose stylesheet wrote it", () => {
+    const wcag = section(themedText, "WCAG 1.4.3 contrast")!;
+    expect(wcag).toMatch(/pass\s+5\s+2\s+3/);
+    expect(wcag).toMatch(/fail\s+3\s+1\s+2/);
+    expect(wcag).toMatch(/exempt: an inactive control is not asked to pass\s+1\s+1\s+0/);
+    expect(wcag).toMatch(/not measurable\s+4\s+0\s+4/);
+    expect(wcag).toMatch(/text over media, where no ratio exists\s+1\s+—\s+—/);
   });
 
   /* The whole point of the failing list is that it can be worked through, and
@@ -45,20 +115,11 @@ describe("the report as it is read in a terminal", () => {
     expect(failures).toContain("4.5");
   });
 
-  it("names the literal values a token already holds, with the token", () => {
-    const drift = section(text, "Drift")!;
-    expect(drift).toContain("src/");
-    expect(drift).toMatch(/--acme-/);
-  });
-
-  it("lists the components the app never rendered", () => {
-    expect(section(text, "Never rendered")).toContain("Chip, Sheet, Stack, Text");
-  });
-
   /* A heading with nothing under it reads as a finding until it is read
      twice. */
   it("leaves out a table it has no rows for", () => {
-    expect(themedText).not.toContain("Read but never declared");
+    expect(themedText).not.toContain("Read by the app and declared by nobody (");
+    expect(themedText).not.toContain("The app's own components (");
   });
 
   it("cuts a long table off and says how many were left", () => {

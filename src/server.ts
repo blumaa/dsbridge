@@ -38,10 +38,12 @@ server.registerTool(
   {
     title: "Design system usage",
     description:
-      "Read an app and report whether the design system it installed is actually being used: how many of " +
-      "its components are rendered, how much of its token contract is read, what the app invented instead, " +
-      "what it wrote by hand, and what its brand does to colour contrast. Works out the design system from " +
-      "what the app installed — nothing needs configuring, and nothing is written anywhere. " +
+      "Read an app and report whether the design system it installed is actually being used. Every value the " +
+      "app writes and every component it renders, sorted by where it came from: the design system, a name the " +
+      "app gave itself, or nothing at all — with the values written by hand broken down by kind, the app's own " +
+      "components that could move into the system, and every colour pair against WCAG under this app's brand. " +
+      "Works out the design system from what the app installed — nothing needs configuring, and nothing is " +
+      "written anywhere. " +
       VERBATIM,
     inputSchema: z.object({ path: where }),
   },
@@ -53,9 +55,10 @@ server.registerTool(
   {
     title: "Design system drift",
     description:
-      "The same reading as design_system_usage with the work list in full rather than its first ten rows: " +
-      "every literal value a token already holds, every invented token duplicating a system value, every " +
-      "token read that nothing declares, and every colour pair failing WCAG under this app's brand. " +
+      "The same reading as design_system_usage with every list in full rather than its first ten rows: " +
+      "every literal value a token already holds, every component the app built itself, every token it " +
+      "declared, every token read that nothing declares, and every colour pair failing WCAG under this " +
+      "app's brand. " +
       VERBATIM,
     inputSchema: z.object({
       path: where,

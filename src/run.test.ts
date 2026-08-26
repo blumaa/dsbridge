@@ -17,9 +17,9 @@ describe("one reading of one app", () => {
 
   it("hands back the report laid out for the terminal it is printed in", () => {
     expect(reading.report).toContain("@acme/ds");
-    expect(reading.report).toContain("38%");
-    expect(reading.report).toMatch(/components\s+6\s+2 rendered, 4 never/);
-    expect(reading.report).toMatch(/drift\s+5\s/);
+    expect(reading.report).toContain("40% of written values came through the system");
+    expect(reading.report).toMatch(/from the design system\s+2\s+4/);
+    expect(reading.report).toMatch(/through no token at all\s+5\s+50%/);
   });
 
   /* The same reading twice is the same characters: a report that moves between
@@ -29,7 +29,7 @@ describe("one reading of one app", () => {
   });
 
   it("hands back the measurements too, for whoever wants to ask more", () => {
-    expect(reading.usage.coverage).toBe(38);
+    expect(reading.usage.coverage).toBe(40);
     expect(reading.contrast.measured).toBe(reading.contrast.pairs.length);
   });
 
