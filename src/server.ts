@@ -9,22 +9,16 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { z } from "zod";
 import { run } from "./run.js";
+import { toolResult } from "./result.js";
 
 const today = () => new Date().toISOString().slice(0, 10);
-
-const text = (body: string) => ({ content: [{ type: "text" as const, text: body }] });
 
 const reading = (path: string | undefined, limit?: number) =>
   run(path ?? process.cwd(), today(), limit);
 
-/* Said to the client, not to the person: what comes back is the answer, not
-   material for one. An agent's instinct with a tool result is to read it and
-   write its own version, and a re-worded table is a table nobody can trust
-   against the page. */
-const VERBATIM =
-  "What comes back is a finished report, already laid out as tables. Print it to the person exactly as " +
-  "it is, in a code block, before any comment of your own: no summarising, no re-ordering, no re-wording, " +
-  "no dropping rows.";
+/* Enough that an agent knows what it is calling. What comes back says the rest
+   of it, where saying it works: `result.ts`. */
+const VERBATIM = "What comes back is a finished report to be printed as it is, not summarised.";
 
 const where = z
   .string()
@@ -47,7 +41,7 @@ server.registerTool(
       VERBATIM,
     inputSchema: z.object({ path: where }),
   },
-  async ({ path }) => text(reading(path).report),
+  async ({ path }) => toolResult(reading(path).report),
 );
 
 server.registerTool(
@@ -65,7 +59,7 @@ server.registerTool(
       limit: z.number().int().positive().max(500).default(100).describe("Rows per table."),
     }),
   },
-  async ({ path, limit }) => text(reading(path, limit).report),
+  async ({ path, limit }) => toolResult(reading(path, limit).report),
 );
 
 serveStdio(() => server);
