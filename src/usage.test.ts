@@ -96,12 +96,36 @@ describe("the tokens the app spends and declares", () => {
       "--app-gap",
       "--app-panel-bg",
       "--app-shadow",
+      "--app-logo",
+      "--app-inset",
+      "--app-icon",
+      "--app-slot",
     ]);
     const duplicates = usage.tokens.invented.filter((t) => t.duplicates !== undefined);
     expect(duplicates.map((t) => [t.name, t.duplicates])).toEqual([
       ["--app-gap", "--acme-space-2"],
       ["--app-panel-bg", "--acme-color-surface"],
+      ["--app-inset", "--acme-space-2"],
     ]);
+  });
+
+  /* Value equality is not duplication. On an eight-point grid two scales will
+     both hold 8px, and what tells them apart is the property each is read
+     into: the system spends --acme-space-2 on padding, and --app-logo is a
+     height. Nothing reads --app-gap, so nothing contradicts the match. */
+  it("does not call a token a duplicate when the two are read into different properties", () => {
+    const duplicates = new Map(usage.tokens.invented.map((t) => [t.name, t.duplicates]));
+    expect(duplicates.get("--app-logo")).toBeUndefined();
+    expect(duplicates.get("--app-icon")).toBeUndefined();
+    expect(duplicates.get("--app-inset")).toBe("--acme-space-2");
+    expect(duplicates.get("--app-gap")).toBe("--acme-space-2");
+  });
+
+  /* One token holding another is a rename, not a use: what --app-icon is for
+     is whatever the token reading it is for. */
+  it("reads a token's use through the token that renames it", () => {
+    const duplicates = new Map(usage.tokens.invented.map((t) => [t.name, t.duplicates]));
+    expect(duplicates.get("--app-icon")).toBeUndefined();
   });
 });
 
@@ -113,14 +137,31 @@ describe("the values written past the system", () => {
       "margin: 8px",
       "border-radius: 3px",
       "color: #0088ff",
+      "font-size: 12px",
+      "height: 8px",
     ]);
   });
 
   it("names the token that already holds the value, where one does", () => {
-    const byValue = new Map(usage.drift.map((d) => [d.value, d.tokens]));
-    expect(byValue.get("12px")).toEqual(["--acme-space-3"]);
-    expect(byValue.get("8px")).toEqual(["--acme-space-2"]);
-    expect(byValue.get("3px")).toEqual([]);
+    const written = new Map(usage.drift.map((d) => [`${d.property}: ${d.value}`, d.tokens]));
+    expect(written.get("padding: 12px")).toEqual(["--acme-space-3"]);
+    expect(written.get("margin: 8px")).toEqual(["--acme-space-2"]);
+    expect(written.get("border-radius: 3px")).toEqual([]);
+  });
+
+  /* The same eight pixels, and the system holds them for padding. Offering a
+     spacing token to a height is offering the wrong scale. */
+  it("offers nothing for a length the system holds for another kind of property", () => {
+    const written = new Map(usage.drift.map((d) => [`${d.property}: ${d.value}`, d.tokens]));
+    expect(written.get("height: 8px")).toEqual([]);
+  });
+
+  /* Nothing anywhere reads --acme-space-3, so the only thing that says what it
+     is for is its name, and a spacing is not a font size. */
+  it("takes a token's own name for what it is for, where nothing reads it", () => {
+    const written = new Map(usage.drift.map((d) => [`${d.property}: ${d.value}`, d.tokens]));
+    expect(written.get("padding: 12px")).toEqual(["--acme-space-3"]);
+    expect(written.get("font-size: 12px")).toEqual([]);
   });
 
   /* The brand re-pointed the accent, so the app's hard-coded copy is the value
@@ -143,14 +184,14 @@ describe("the values written past the system", () => {
 });
 
 describe("where every value the app writes came from", () => {
-  /* The whole report in three numbers: four values read a system token, one
-     reads a token of the app's own, five went through no token at all. */
+  /* The whole report in three numbers: four values read a system token, five
+     read a token of the app's own, seven went through no token at all. */
   it("counts the system, the app's own tokens and the literals apart", () => {
-    expect(usage.written).toEqual({ system: 4, own: 1, literal: 5 });
+    expect(usage.written).toEqual({ system: 4, own: 5, literal: 7 });
   });
 
   it("is the share of written values that came from the system", () => {
-    expect(usage.coverage).toBe(40);
+    expect(usage.coverage).toBe(25);
   });
 
   /* A token of the app's own is not the design system, however tidy it is. */
@@ -167,6 +208,8 @@ describe("where every value the app writes came from", () => {
       "spacing",
       "radius",
       "colour",
+      "type",
+      "size",
     ]);
   });
 });

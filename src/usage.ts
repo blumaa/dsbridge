@@ -291,6 +291,21 @@ const kindOf = (property: string, value: string): Kind => {
   return COLOR.test(value) ? "colour" : "other";
 };
 
+/* What a token's own name says it is for. Weaker evidence than a read site and
+   used only where there is none: a scale is named after the thing it scales,
+   and a token nothing in this repository reads has nothing else to go on. */
+const NAMES: [RegExp, Kind][] = [
+  [/(^|-)(space|spacing|gap|inset|pad|padding|margin)(-|$)/, "spacing"],
+  [/(^|-)(radius|rounded)(-|$)/, "radius"],
+  [/(^|-)(shadow|elevation)(-|$)/, "shadow"],
+  [/(^|-)(border|stroke|outline)(-|$)/, "border"],
+  [/(^|-)(font|text|leading|tracking|letter)(-|$)/, "type"],
+  [/(^|-)(size|width|height|w|h|icon|logo|avatar|bp|breakpoint|screen)(-|$)/, "size"],
+];
+
+const kindOfName = (token: string): Kind | undefined =>
+  NAMES.find(([pattern]) => pattern.test(token))?.[1];
+
 /**
  * Whether a system token holds its value *because of* an app token.
  *
@@ -326,6 +341,56 @@ function normalise(value: string, map: TokenMap): string {
     return `rgba(${r},${g},${b},${a})`;
   } catch {
     return trimmed;
+  }
+}
+
+/** Token to the kinds of property it is read into: what a token is for. */
+type Uses = Map<string, Set<Kind>>;
+
+/**
+ * System tokens holding a value, less the ones that hold it for something else.
+ *
+ * Value equality is not meaning equality. On an eight-point grid two scales
+ * will both hold 8px, and what tells a spacing from a height is the property
+ * each is read into. A colour is exempt: a colour is the same colour wherever
+ * it is spent. So is a token nothing reads, which has no use to disagree with
+ * — silence here is the absence of evidence, not evidence of a difference.
+ */
+function holding(names: string[], value: string, mine: Set<Kind>, uses: Uses): string[] {
+  if (COLOR.test(value) || mine.size === 0) return names;
+  return names.filter((name) => {
+    const theirs = kindsOf(name, uses);
+    return theirs.size === 0 || [...theirs].some((kind) => mine.has(kind));
+  });
+}
+
+/** What a token is for: the properties it is read into, or failing those, its
+    own name. Nothing at all means nothing to disagree with. */
+function kindsOf(token: string, uses: Uses): Set<Kind> {
+  const read = uses.get(token);
+  if (read !== undefined && read.size > 0) return read;
+  const named = kindOfName(token);
+  return new Set(named === undefined ? [] : [named]);
+}
+
+/**
+ * A kind flows up an alias chain.
+ *
+ * `--logo-height: var(--kb-logo-sm)` is not a use, it is a rename: what
+ * `--kb-logo-sm` is for is whatever `--logo-height` is for. Run to a fixed
+ * point, which terminates because a set of kinds only ever grows.
+ */
+function spread(uses: Uses, aliases: Map<string, Set<string>>): void {
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const [name, renames] of aliases) {
+      const kinds = uses.get(name) ?? new Set<Kind>();
+      const before = kinds.size;
+      for (const rename of renames) for (const kind of uses.get(rename) ?? []) kinds.add(kind);
+      if (kinds.size === before) continue;
+      uses.set(name, kinds);
+      changed = true;
+    }
   }
 }
 
@@ -377,6 +442,32 @@ export function measure(system: Discovery): Usage {
       : [],
   );
 
+  const uses: Uses = new Map();
+  /** Token to the custom properties that are only another name for it. */
+  const aliases = new Map<string, Set<string>>();
+
+  /** What a token is spent on, wherever it is spent. */
+  const readInto = (property: string, value: string) => {
+    const kind = property.startsWith("--") ? undefined : kindOf(property, value);
+    for (const name of referencesIn(value)) {
+      if (kind === undefined) {
+        aliases.set(name, (aliases.get(name) ?? new Set()).add(property));
+        continue;
+      }
+      const kinds = uses.get(name) ?? new Set<Kind>();
+      kinds.add(kind);
+      uses.set(name, kinds);
+    }
+  };
+
+  /* The system spends its own tokens too, and a token no app has read yet is
+     still for something. */
+  for (const file of [system.tokens.stylesheet, system.components?.stylesheet]) {
+    if (file === undefined) continue;
+    for (const block of blocksIn(readFileSync(file, "utf8")))
+      for (const declaration of block.declarations) readInto(declaration.property, declaration.value);
+  }
+
   const spent = new Set<string>();
   const missing: (Place & { name: string })[] = [];
   const invented: Invented[] = [];
@@ -386,7 +477,8 @@ export function measure(system: Discovery): Usage {
   let own = 0;
 
   /** Every var() in one value, counted against whoever named it. */
-  const spend = (value: string, file: string, line: number) => {
+  const spend = (property: string, value: string, file: string, line: number) => {
+    readInto(property, value);
     for (const name of referencesIn(value)) {
       if (!name.startsWith(system.prefix)) {
         own += 1;
@@ -408,7 +500,7 @@ export function measure(system: Discovery): Usage {
     const source = readFileSync(file, "utf8");
     for (const block of blocksIn(source)) {
       for (const declaration of block.declarations) {
-        spend(declaration.value, file, declaration.line);
+        spend(declaration.property, declaration.value, file, declaration.line);
         if (declaration.property.startsWith("--")) continue;
         if (!literal(declaration.value)) continue;
         drift.push({
@@ -417,7 +509,7 @@ export function measure(system: Discovery): Usage {
           property: declaration.property,
           value: declaration.value.trim(),
           kind: kindOf(declaration.property, declaration.value),
-          tokens: holders.get(normalise(declaration.value, map)) ?? [],
+          tokens: [],
         });
       }
     }
@@ -426,16 +518,12 @@ export function measure(system: Discovery): Usage {
        holds that value without getting it from here. */
     for (const declared of declarationsIn(source, file)) {
       if (declared.name.startsWith(system.prefix)) continue;
-      const holder = holders
-        .get(normalise(declared.value, map))
-        ?.find((name) => !derivesFrom(graph, name, declared.name));
       invented.push({
         name: declared.name,
         value: declared.value.trim(),
         file,
         line: declared.line,
         used: 0,
-        ...(holder ? { duplicates: holder } : {}),
       });
     }
   }
@@ -446,8 +534,8 @@ export function measure(system: Discovery): Usage {
     const source = readFileSync(file, "utf8");
     for (const declaration of styleDeclarations(source)) {
       const value = declaration.value.trim().replace(/^["'`]|["'`]$/g, "");
-      spend(value, file, declaration.line);
       const property = kebab(declaration.key.replace(/^["'`]|["'`]$/g, ""));
+      spend(property, value, file, declaration.line);
       if (property.startsWith("--")) continue;
       if (!literal(value)) continue;
       drift.push({
@@ -456,7 +544,7 @@ export function measure(system: Discovery): Usage {
         property,
         value,
         kind: kindOf(property, value),
-        tokens: holders.get(normalise(value, map)) ?? [],
+        tokens: [],
       });
     }
   }
@@ -465,7 +553,18 @@ export function measure(system: Discovery): Usage {
   drift.sort(place);
   missing.sort(place);
   invented.sort((a, b) => place(a, b) || a.name.localeCompare(b.name));
-  for (const token of invented) token.used = ownReads.get(token.name) ?? 0;
+  /* Every read site is known only now, and what a token holds is answered by
+     what it is for as much as by what it is worth. */
+  spread(uses, aliases);
+  const held = (value: string) => holders.get(normalise(value, map)) ?? [];
+  for (const one of drift) one.tokens = holding(held(one.value), one.value, new Set([one.kind]), uses);
+  for (const token of invented) {
+    token.used = ownReads.get(token.name) ?? 0;
+    const holder = holding(held(token.value), token.value, kindsOf(token.name, uses), uses).find(
+      (name) => !derivesFrom(graph, name, token.name),
+    );
+    if (holder !== undefined) token.duplicates = holder;
+  }
 
   const written = { system: references, own, literal: drift.length };
   const all = written.system + written.own + written.literal;

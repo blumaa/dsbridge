@@ -150,7 +150,9 @@ from: the design system, something the app named itself, or nothing at all.
   nothing of this app.
 - **Tokens** — declared, read, re-pointed by the app's brand, declared by the
   app alongside an existing one, or read and declared by nobody, which is a
-  broken reference.
+  broken reference. Two tokens count as one value only when they are read for
+  the same kind of thing: on an eight-point grid a spacing and a height will
+  both hold 8px without meaning the same thing.
 - **Contrast** — every text and background pair the app can render, resolved
   under the app's own brand in light and dark, against WCAG 1.4.3 and 1.4.11,
   and split by whose stylesheet wrote the pair.

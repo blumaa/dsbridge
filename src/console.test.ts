@@ -23,25 +23,27 @@ describe("the report as it is read in a terminal", () => {
   it("says which app it read, against which system, on which day", () => {
     expect(text).toContain("app · 2026-08-25");
     expect(text).toContain("@acme/ds");
-    expect(text).toContain("40% of written values came through the system");
+    expect(text).toContain("25% of written values came through the system");
   });
 
   /* The contract in three numbers: the system named this value, the app named
      it, or nobody did. */
   it("splits every value the app wrote by who named it", () => {
     const values = section(text, "values written")!;
-    expect(values).toMatch(/through a design system token\s+4\s+40%/);
-    expect(values).toMatch(/through a token the app named itself\s+1\s+10%/);
-    expect(values).toMatch(/through no token at all\s+5\s+50%/);
+    expect(values).toMatch(/through a design system token\s+4\s+25%/);
+    expect(values).toMatch(/through a token the app named itself\s+5\s+31%/);
+    expect(values).toMatch(/through no token at all\s+7\s+44%/);
   });
 
-  /* A missing scale is the actionable half: five literals is a number, three
+  /* A missing scale is the actionable half: seven literals is a number, three
      spacings with no token is a job. */
   it("says what kind of value went through no token, and what a token holds", () => {
-    const kinds = section(text, "Values with no token behind them (5)")!;
+    const kinds = section(text, "Values with no token behind them (7)")!;
     expect(kinds).toMatch(/spacing\s+3\s+3/);
     expect(kinds).toMatch(/radius\s+1\s+—/);
     expect(kinds).toMatch(/colour\s+1\s+—/);
+    expect(kinds).toMatch(/type\s+1\s+—/);
+    expect(kinds).toMatch(/size\s+1\s+—/);
   });
 
   it("names the literal values a token already holds, with the token", () => {
@@ -78,12 +80,12 @@ describe("the report as it is read in a terminal", () => {
     const counts = section(text, "tokens")!;
     expect(counts).toMatch(/declared by the design system\s+7/);
     expect(counts).toMatch(/read by the app\s+3/);
-    expect(counts).toMatch(/declared by the app itself\s+3/);
-    expect(counts).toMatch(/of those, read anywhere\s+1/);
+    expect(counts).toMatch(/declared by the app itself\s+7/);
+    expect(counts).toMatch(/of those, read anywhere\s+5/);
   });
 
   it("names the tokens the app declared itself, with what reads them", () => {
-    const invented = section(text, "Tokens the app named itself (3)")!;
+    const invented = section(text, "Tokens the app named itself (7)")!;
     expect(invented).toMatch(/--app-gap\s+8px\s+0\s+--acme-space-2/);
     expect(invented).toContain("--app-panel-bg");
   });

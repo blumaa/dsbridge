@@ -3,4 +3,7 @@
   --app-gap: 8px;
   --app-panel-bg: #ffffff;
   --app-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --app-logo: 8px;
+  --app-inset: 8px;
+  --app-icon: 8px;
 }

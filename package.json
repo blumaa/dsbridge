@@ -9,6 +9,7 @@
   },
   "homepage": "https://github.com/blumaa/dsbridge#readme",
   "license": "MIT",
+  "packageManager": "pnpm@10.13.1",
   "type": "module",
   "bin": {
     "dsbridge-mcp": "./dist/server.js"
