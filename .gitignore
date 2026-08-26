@@ -1,3 +1,4 @@
 node_modules/
 dist/
 !src/__fixtures__/**/node_modules/
+!src/__fixtures__/**/dist/
