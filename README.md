@@ -1,17 +1,32 @@
 # dsbridge
 
-An MCP server that answers one question about any app: is the design system it
-installed actually being used, and how.
+An MCP server that answers one question about any app: is the contract between
+the design system it installed and the app holding — every component shipped
+against every one rendered, every token declared against every one read, and
+what the app's brand does to contrast.
 
 Ask from inside a consuming app, in plain language — *"check my design system
-usage"* — and get back a five-line headline plus a link to a page you can read.
+usage"* — and get the report back as tables, in the terminal, with a file and a
+line against every row.
 
 ```
+web · 2026-08-26
+
 @acme/tokens · @acme/react — 99% of written values came through the system
-components: 64 of 73 rendered, 9 never
-tokens: 67 of 268 read, 60 re-pointed, 47 invented (15 duplicating a system value), 1 read but never declared
-drift: 2 literal values in 2 files
-contrast: 119 pairs measured, 3 failing, 7 exempt (inactive controls), 17 not measurable, 6 over media
+
+area        counted  found
+----------  -------  -----------------------------------------------------------
+components       73  64 rendered, 9 never
+tokens          268  67 read, 60 re-pointed, 47 invented, 15 of those a duplicate
+drift             2  0 a token already holds, in 2 files
+contrast        119  3 failing, 7 exempt, 17 not measurable, 6 over media
+
+Contrast failures (3)
+where                        selector                  text on surface                   light   dark  needs  fails
+---------------------------  ------------------------  --------------------------------  -----  -----  -----  -----
+…/react/dist/index.css:2559  .acme-Carousel__counter   --acme-text-on-media on --acme-…   2.60  19.88    4.5  light
+…/react/dist/index.css:2782  .acme-VideoPlayer__start  --acme-text-on-media on --acme-…   2.60  19.88    4.5  light
+…/src/tokens/brand.css:263   .acme-Chip__variant-soft  --acme-text-accent on --acme-ac…   6.67   4.39    4.5  dark
 ```
 
 ## Install
@@ -48,11 +63,14 @@ Two tools. Both take an optional `path` and default to the working directory.
 
 | Tool | Returns |
 | --- | --- |
-| `design_system_usage` | The headline above, plus a `file://` link to a self-contained HTML page written under `$TMPDIR/dsbridge` |
-| `design_system_drift` | The fix lists: hand-written values a token already holds, invented tokens duplicating a system value, tokens read but never declared, and contrast failures |
+| `design_system_usage` | The report above: the summary table, then a table per finding, ten rows each |
+| `design_system_drift` | The same report with every row rather than the first ten |
 
 Ask for either in words. *"Where is this app drifting from the design system?"*
 reaches the second one.
+
+Nothing is written anywhere. The app is read and left exactly as it was found,
+and the report is the whole answer — there is no file to open afterwards.
 
 ## What it measures
 

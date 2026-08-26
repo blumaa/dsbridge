@@ -1,29 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { mkdtempSync, existsSync, readdirSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { readdirSync } from "node:fs";
+import { resolve } from "node:path";
 import { run } from "./run.js";
 
 const APP = resolve(import.meta.dirname, "__fixtures__", "usage", "app");
-const out = () => mkdtempSync(join(tmpdir(), "dsbridge-test-"));
 
 describe("one reading of one app", () => {
-  const into = out();
-  const reading = run(APP, "2026-08-25", into);
+  const reading = run(APP, "2026-08-25");
 
-  it("writes the page where it was told and nowhere near the app", () => {
-    expect(existsSync(reading.path)).toBe(true);
-    expect(reading.path.startsWith(into)).toBe(true);
-    expect(readdirSync(APP)).not.toContain("dsbridge");
-    expect(readFileSync(reading.path, "utf8")).toMatch(/^<!doctype html>/i);
-  });
-
-  /* The same reading twice is the same file: a folder filling with dated
-     copies is a folder nobody opens. */
-  it("writes over its own last reading of the same app", () => {
-    const again = run(APP, "2026-08-26", into);
-    expect(again.path).toBe(reading.path);
-    expect(readdirSync(into)).toHaveLength(1);
+  /* The app is somebody's repository, not this tool's working directory. */
+  it("leaves the app exactly as it found it", () => {
+    const before = readdirSync(APP);
+    run(APP, "2026-08-26");
+    expect(readdirSync(APP)).toEqual(before);
   });
 
   it("hands back the report laid out for the terminal it is printed in", () => {
@@ -31,18 +20,28 @@ describe("one reading of one app", () => {
     expect(reading.report).toContain("38%");
     expect(reading.report).toMatch(/components\s+6\s+2 rendered, 4 never/);
     expect(reading.report).toMatch(/drift\s+5\s/);
-    expect(reading.report).toContain(`page: file://${reading.path}`);
+  });
+
+  /* The same reading twice is the same characters: a report that moves between
+     runs is a report nobody can diff. */
+  it("prints the same characters for the same reading", () => {
+    expect(run(APP, "2026-08-25").report).toBe(reading.report);
   });
 
   it("hands back the measurements too, for whoever wants to ask more", () => {
     expect(reading.usage.coverage).toBe(38);
     expect(reading.contrast.measured).toBe(reading.contrast.pairs.length);
   });
+
+  it("lists every row when asked for more than it shows by default", () => {
+    const all = run(APP, "2026-08-25", 500);
+    expect(all.report).not.toContain("… and");
+  });
 });
 
 describe("an app with no design system in it", () => {
   it("says what it looked for rather than failing silently", () => {
     const bare = resolve(import.meta.dirname, "__fixtures__", "discovery", "bare");
-    expect(() => run(bare, "2026-08-25", out())).toThrow(/no design system/i);
+    expect(() => run(bare, "2026-08-25")).toThrow(/no design system/i);
   });
 });

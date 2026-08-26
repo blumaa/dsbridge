@@ -1,14 +1,10 @@
-/* The report, as it is read where it is printed.
- *
- * The page holds everything; this holds what someone can act on before they
- * open it. Both are rendered from the same reading, so the terminal and the
- * page can disagree about the wording and never about a number.
+/* The findings, laid out where they are read.
  *
  * Tables, not prose: the caller of this tool is usually a coding agent, and a
- * paragraph is an invitation to summarise. A table is the answer already.
+ * paragraph is an invitation to summarise. A table is the answer already —
+ * every row a place in the app, and nothing to open afterwards.
  */
 import { basename, relative } from "node:path";
-import { pathToFileURL } from "node:url";
 import { table, type Align } from "./table.js";
 import type { Contrast, Pair } from "./contrast.js";
 import type { Usage } from "./usage.js";
@@ -116,16 +112,10 @@ const themes = (pair: Pair) =>
 /**
  * The report.
  *
- * `at` and `page` are passed in rather than found here, so the same reading of
- * the same app prints the same characters.
+ * `at` is passed in rather than found here, so the same reading of the same app
+ * prints the same characters.
  */
-export function report(
-  usage: Usage,
-  contrast: Contrast,
-  at: string,
-  page: string,
-  limit: number = ROWS,
-): string {
+export function report(usage: Usage, contrast: Contrast, at: string, limit: number = ROWS): string {
   const root = usage.system.root;
   const where = (file: string, line: number) => place(file, line, root);
   const system = [usage.system.tokens.id, usage.system.components?.id].filter(Boolean).join(" · ");
@@ -186,6 +176,5 @@ export function report(
             usage.components.unused.join(", "),
         ]
       : []),
-    `page: ${pathToFileURL(page).href}`,
   ].join("\n\n");
 }

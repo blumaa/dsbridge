@@ -11,10 +11,10 @@ const reading = (name: string) => {
 };
 
 const used = reading("usage");
-const text = report(used.usage, used.contrast, "2026-08-25", "/tmp/dsbridge/app.html");
+const text = report(used.usage, used.contrast, "2026-08-25");
 
 const themed = reading("contrast");
-const themedText = report(themed.usage, themed.contrast, "2026-08-25", "/tmp/dsbridge/themed.html");
+const themedText = report(themed.usage, themed.contrast, "2026-08-25");
 
 const section = (body: string, heading: string) =>
   body.split("\n\n").find((part) => part.startsWith(heading));
@@ -62,7 +62,7 @@ describe("the report as it is read in a terminal", () => {
   });
 
   it("cuts a long table off and says how many were left", () => {
-    const short = report(used.usage, used.contrast, "2026-08-25", "/tmp/x.html", 1);
+    const short = report(used.usage, used.contrast, "2026-08-25", 1);
     expect(short).toContain("and 2 more");
   });
 
@@ -74,8 +74,11 @@ describe("the report as it is read in a terminal", () => {
     expect(failures).toContain("* the rule paints no surface of its own");
   });
 
-  it("ends with the page it wrote", () => {
-    expect(text.trimEnd().endsWith("page: file:///tmp/dsbridge/app.html")).toBe(true);
+  /* Nothing to open afterwards, and nothing left in the app: the answer is
+     the whole answer. */
+  it("writes nothing anywhere and points at nothing to open", () => {
+    expect(text).not.toContain("file://");
+    expect(text).not.toContain(".html");
   });
 
   /* A path is opened, and half a directory name opens nothing. */
@@ -93,7 +96,7 @@ describe("the report as it is read in a terminal", () => {
         ],
       },
     };
-    const out = report(deep, used.contrast, "2026-08-25", "/tmp/x.html");
+    const out = report(deep, used.contrast, "2026-08-25");
     expect(out).toContain("Thing.module.css:7");
     expect(out).toMatch(/…\/[\w./-]+Thing\.module\.css:7/);
     expect(out).not.toMatch(/…\/[a-z]+ed\//);

@@ -7,20 +7,15 @@
  */
 import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { z } from "zod";
-import { report } from "./console.js";
-import { run, type Reading } from "./run.js";
-
-/** Pages go here: outside every app, one file per app, overwritten each reading. */
-const PAGES = join(tmpdir(), "dsbridge");
+import { run } from "./run.js";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
 const text = (body: string) => ({ content: [{ type: "text" as const, text: body }] });
 
-const reading = (path: string | undefined): Reading => run(path ?? process.cwd(), today(), PAGES);
+const reading = (path: string | undefined, limit?: number) =>
+  run(path ?? process.cwd(), today(), limit);
 
 /* Said to the client, not to the person: what comes back is the answer, not
    material for one. An agent's instinct with a tool result is to read it and
@@ -46,7 +41,7 @@ server.registerTool(
       "Read an app and report whether the design system it installed is actually being used: how many of " +
       "its components are rendered, how much of its token contract is read, what the app invented instead, " +
       "what it wrote by hand, and what its brand does to colour contrast. Works out the design system from " +
-      "what the app installed — nothing needs configuring. Leaves a page behind with every finding on it. " +
+      "what the app installed — nothing needs configuring, and nothing is written anywhere. " +
       VERBATIM,
     inputSchema: z.object({ path: where }),
   },
@@ -67,10 +62,7 @@ server.registerTool(
       limit: z.number().int().positive().max(500).default(100).describe("Rows per table."),
     }),
   },
-  async ({ path, limit }) => {
-    const found = reading(path);
-    return text(report(found.usage, found.contrast, today(), found.path, limit));
-  },
+  async ({ path, limit }) => text(reading(path, limit).report),
 );
 
 serveStdio(() => server);
